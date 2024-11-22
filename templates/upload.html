@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Upload Song</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        form {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Upload Song</h1>
+    <form action="/upload" method="post" enctype="multipart/form-data">
+        <label for="song-title">Title</label>
+        <input type="text" name="title" id="song-title">
+        <label for="song-artist">Artist</label>
+        <input type="text" name="artist" id="song-artist">
+        <input type="file" name="song" accept="audio/*" required>
+        <button type="submit">Upload</button>
+    </form>
+</body>
+</html>
