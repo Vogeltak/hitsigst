@@ -1,14 +1,24 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="A do-it-yourself song guessing game by Mark van der Schoot and Max Crone">
     <title>Music Player</title>
     <style>
+        * {
+            --bg: #211f1e;
+            --accent: #df0;
+        }
         body {
+            background: #211f1e;
+            color: #fff;
             font-family: Arial, sans-serif;
             max-width: 800px;
             margin: 0 auto;
             padding: 20px;
             display: flex;
+            flex-direction: column;
             justify-content: center;
             align-items: center;
             min-height: 100vh;
@@ -17,14 +27,58 @@
             width: 100%;
             max-width: 500px;
         }
+        .button {
+            height: 5rem;
+            width: 5rem;
+        }
+            .button > div {
+                cursor: pointer;
+                transition-duration: .3s;
+                transition-timing-function: cubic-bezier(.4,0,.2,1);
+                position: relative;
+            }
+            .button > div:hover {
+                opacity: 0.7;
+            }
+            .symbol {
+                border-radius: 9999px;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                top: 0;
+                right: 0;
+                left: 0;
+                bottom: 0;
+                position: absolute;
+            }
+            .symbol > svg {
+                width: 1.5rem;
+                margin-left: 0.625rem;
+            }
+        svg {
+            display: block;
+        }
         audio {
             width: 100%;
         }
     </style>
 </head>
 <body>
+    <h1>Hitrelease</h1>
+    <div class="button">
+        <div>
+            <svg class="button-background" width="100%" height="100%" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path data-v-a2f7df21="" d="M0 20C0 7.58621 7.36088 0 20.0012 0C32.6416 0 40 7.58873 40 20C40 31.7518 32.7937 40 20.0012 40C7.20882 40 0 32.6831 0 20Z" fill="var(--accent)"></path>
+            </svg>
+            <div class="symbol">
+                <svg role="presentation" class="ml-1.5 ml-2.5 w-6" width="100%" height="100%" viewBox="0 0 15 14" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M0 0V12.8333L10.0833 6.41667L0 0Z" fill="black"></path>
+                </svg>
+            </div>
+        </div>
+    </div>
     <div class="player">
-        <audio controls src="{{ song_url }}">
+        <audio controls src="{{ song_url }}" autoplay>
             Your browser does not support the audio element.
         </audio>
     </div>
