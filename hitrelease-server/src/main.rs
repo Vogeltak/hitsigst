@@ -3,14 +3,15 @@ use aws_config::BehaviorVersion;
 use aws_sdk_s3::{config::Region, presigning, Client as S3Client};
 use axum::{
     extract::State,
+    handler::Handler,
     response::{Html, IntoResponse},
     routing::{get, post},
     Router,
 };
 use image;
-use qrcode::QrCode;
+use qrcode::{render::svg, QrCode};
 use sqlx::SqlitePool;
-use std::sync::Arc;
+use std::{fs::File, io::Write, sync::Arc};
 
 mod song;
 mod upload;
