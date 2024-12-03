@@ -5,82 +5,164 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="A do-it-yourself song guessing game by Mark van der Schoot and Max Crone">
     <title>Music Player</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Luckiest+Guy&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap" rel="stylesheet">
     <style>
         * {
             --bg: #211f1e;
             --accent: #df0;
+            /* from https://www.iamsajid.com/colors/ */
+            --color-primary: hsl(249, 50%, 90%);
+            --color-secondary: hsl(249, 50%, 10%);
+            --color-tertiary: hsl(189, 80%, 20%);
+            --color-accent: hsl(309, 80%, 80%);
         }
         body {
-            background: #211f1e;
-            color: #fff;
-            font-family: Arial, sans-serif;
+            background: var(--color-secondary);
+            color: var(--color-primary);
+            font-family: Inter, Arial, sans-serif;
             max-width: 800px;
             margin: 0 auto;
             padding: 20px;
             display: flex;
             flex-direction: column;
-            justify-content: center;
             align-items: center;
-            min-height: 100vh;
+        }
+        h1 {
+            letter-spacing: 0.2rem;
+            line-height: 3rem;
+            font-family: "Luckiest Guy", sans-serif;
         }
         .player {
             width: 100%;
             max-width: 500px;
         }
-        .button {
-            height: 5rem;
-            width: 5rem;
-        }
-            .button > div {
-                cursor: pointer;
-                transition-duration: .3s;
-                transition-timing-function: cubic-bezier(.4,0,.2,1);
-                position: relative;
-            }
-            .button > div:hover {
-                opacity: 0.7;
-            }
-            .symbol {
-                border-radius: 9999px;
-                display: flex;
-                justify-content: center;
-                align-items: center;
-                top: 0;
-                right: 0;
-                left: 0;
-                bottom: 0;
-                position: absolute;
-            }
-            .symbol > svg {
-                width: 1.5rem;
-                margin-left: 0.625rem;
-            }
-        svg {
-            display: block;
-        }
         audio {
             width: 100%;
+        }
+        #playerState {
+            color: var(--color-accent);
+            display: none;
+            font-style: italic;
+        }
+
+        #visualizer {
+            position: relative;
+            width: 150px;
+            height: 150px;
+            margin: 5rem 0;
+        }
+
+        .core {
+            position: absolute;
+            width: 60px;
+            height: 60px;
+            /*background: radial-gradient(circle,
+                hsl(250, 80%, 70%) 0%,
+                rgba(245, 163, 233, 0.6) 100%
+            );*/
+            border-radius: 50%;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            /*box-shadow: 0 0 60px hsl(309, 80%, 70%);*/
+        }
+
+        .pulse {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle, 
+                rgba(245, 163, 233, 1) 0%,
+                rgba(128, 0, 255, 0.5) 50%,
+                rgba(64, 0, 128, 0) 70%
+            );
+            border-radius: 50%;
+            animation: pulse 2s ease infinite;
+            transform-origin: center;
+            animation-play-state: paused;
+        }
+
+        #visualizer.playing .pulse {
+            animation-play-state: running;
+        }
+
+        .pulse:nth-child(2) {
+            animation-delay: 0.667s;
+        }
+
+        .pulse:nth-child(3) {
+            animation-delay: 1.333s;
+        }
+
+        @keyframes pulse {
+            0% {
+                transform: scale(0.95);
+                opacity: 0.8;
+            }
+            50% {
+                transform: scale(2);
+                opacity: 0.3;
+            }
+            100% {
+                transform: scale(0.95);
+                opacity: 0.8;
+            }
         }
     </style>
 </head>
 <body>
     <h1>Hitrelease</h1>
-    <div class="button">
-        <div>
-            <svg class="button-background" width="100%" height="100%" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path data-v-a2f7df21="" d="M0 20C0 7.58621 7.36088 0 20.0012 0C32.6416 0 40 7.58873 40 20C40 31.7518 32.7937 40 20.0012 40C7.20882 40 0 32.6831 0 20Z" fill="var(--accent)"></path>
-            </svg>
-            <div class="symbol">
-                <svg role="presentation" class="ml-1.5 ml-2.5 w-6" width="100%" height="100%" viewBox="0 0 15 14" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M0 0V12.8333L10.0833 6.41667L0 0Z" fill="black"></path>
-                </svg>
-            </div>
-        </div>
+    <p style="opacity: 0.5;">Tap to play or pause</p>
+    <div id="visualizer">
+        <div class="pulse"></div>
+        <div class="pulse"></div>
+        <div class="pulse"></div>
+        <div class="core"></div>
     </div>
     <div class="player">
-        <audio controls src="{{ song_url }}" autoplay>
+        <audio id="song" src="{{ song_url }}" loop>
             Your browser does not support the audio element.
         </audio>
     </div>
+    <p id="playerState">paused</p>
+    <script>
+        const visualizer = document.getElementById('visualizer');
+        const audioPlayer = document.getElementById('song');
+        const playerState = document.getElementById('playerState');
+        let isPlaying = !audioPlayer.paused;
+
+        visualizer.addEventListener('click', () => {
+            if (isPlaying) {
+                audioPlayer.pause();
+                visualizer.classList.remove('playing');
+                isPlaying = false;
+            } else {
+                audioPlayer.play();
+                visualizer.classList.add('playing');
+                isPlaying = true;
+            }
+        });
+
+        // Update button text and class on play event
+        audioPlayer.addEventListener('play', () => {
+            visualizer.classList.add('playing');
+            playerState.style.display = 'none';
+        });
+
+        // Update button text and class on pause event
+        audioPlayer.addEventListener('pause', () => {
+            visualizer.classList.remove('playing');
+            playerState.style.display = 'block';
+        });
+
+        // Handle when audio ends
+        audioPlayer.addEventListener('ended', () => {
+            isPlaying = false;
+            visualizer.classList.remove('playing');
+        });
+    </script>
 </body>
 </html>

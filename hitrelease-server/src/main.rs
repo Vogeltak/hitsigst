@@ -78,23 +78,23 @@ async fn main() -> anyhow::Result<()> {
 
 // Handler for the player page
 async fn show_player(
-    State(state): State<Arc<AppState>>,
+    State(_state): State<Arc<AppState>>,
     axum::extract::Path(song_id): axum::extract::Path<String>,
 ) -> impl IntoResponse {
     // Get presigned URL for the song
-    let presigned_request = state
-        .s3_client
-        .get_object()
-        .bucket(&state.bucket_name)
-        .key(&song_id)
-        .presigned(
-            presigning::PresigningConfig::expires_in(std::time::Duration::from_secs(3600)).unwrap(),
-        )
-        .await
-        .unwrap();
+    // let presigned_request = state
+    //     .s3_client
+    //     .get_object()
+    //     .bucket(&state.bucket_name)
+    //     .key(&song_id)
+    //     .presigned(
+    //         presigning::PresigningConfig::expires_in(std::time::Duration::from_secs(3600)).unwrap(),
+    //     )
+    //     .await
+    //     .unwrap();
 
     let template = PlayerTemplate {
-        song_url: presigned_request.uri().to_string(),
+        song_url: format!("http://cdn.hitrelease.nl/{song_id}.mp3"),
     };
     Html(template.render().unwrap())
 }
