@@ -1387,6 +1387,7 @@ dependencies = [
  "aws-sdk-s3",
  "axum",
  "bytes",
+ "hitrelease-util",
  "image",
  "qrcode",
  "sqlx",

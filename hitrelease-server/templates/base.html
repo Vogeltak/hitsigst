@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="A do-it-yourself song guessing game by Mark van der Schoot and Max Crone">
+    <title>Music Player</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Luckiest+Guy&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap" rel="stylesheet">
+    <style>
+        * {
+            --bg: #211f1e;
+            --accent: #df0;
+            /* from https://www.iamsajid.com/colors/ */
+            --color-primary: hsl(249, 50%, 90%);
+            --color-secondary: hsl(249, 50%, 10%);
+            --color-tertiary: hsl(189, 80%, 20%);
+            --color-accent: hsl(309, 80%, 80%);
+        }
+        body {
+            background: var(--color-secondary);
+            color: var(--color-primary);
+            font-family: Inter, Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        h1 {
+            letter-spacing: 0.2rem;
+            line-height: 3rem;
+            font-family: "Luckiest Guy", sans-serif;
+        }
+        a {
+            color: var(--color-primary);
+            text-decoration: none;
+        }
+        a:visited {
+            color: var(--color-primary);
+        }
+        p {
+            line-height: 1.6rem;
+        }
+        .player {
+            width: 100%;
+            max-width: 500px;
+        }
+        audio {
+            width: 100%;
+        }
+        #playerState {
+            color: var(--color-accent);
+            display: none;
+            font-style: italic;
+        }
+
+        #visualizer {
+            position: relative;
+            width: 150px;
+            height: 150px;
+            margin: 5rem 0;
+        }
+
+        .core {
+            position: absolute;
+            width: 60px;
+            height: 60px;
+            /*background: radial-gradient(circle,
+                hsl(250, 80%, 70%) 0%,
+                rgba(245, 163, 233, 0.6) 100%
+            );*/
+            border-radius: 50%;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            /*box-shadow: 0 0 60px hsl(309, 80%, 70%);*/
+        }
+
+        .pulse {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle,
+                rgba(245, 163, 233, 1) 0%,
+                rgba(128, 0, 255, 0.5) 50%,
+                rgba(64, 0, 128, 0) 70%
+            );
+            border-radius: 50%;
+            animation: pulse 2s ease infinite;
+            transform-origin: center;
+            animation-play-state: paused;
+        }
+
+        #visualizer.playing .pulse {
+            animation-play-state: running;
+        }
+
+        .pulse:nth-child(2) {
+            animation-delay: 0.667s;
+        }
+
+        .pulse:nth-child(3) {
+            animation-delay: 1.333s;
+        }
+
+        @keyframes pulse {
+            0% {
+                transform: scale(0.95);
+                opacity: 0.8;
+            }
+            50% {
+                transform: scale(2);
+                opacity: 0.3;
+            }
+            100% {
+                transform: scale(0.95);
+                opacity: 0.8;
+            }
+        }
+    </style>
+</head>
+<body>
+    {% block content %}{% endblock %}
+</body>
+</html>
