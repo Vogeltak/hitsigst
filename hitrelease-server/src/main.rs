@@ -4,6 +4,7 @@ use aws_sdk_s3::{config::Region, presigning, Client as S3Client};
 use axum::{
     extract::State,
     handler::Handler,
+    http::StatusCode,
     response::{Html, IntoResponse},
     routing::{get, post},
     Router,
@@ -11,7 +12,8 @@ use axum::{
 use image;
 use qrcode::{render::svg, QrCode};
 use sqlx::SqlitePool;
-use std::{fs::File, io::Write, sync::Arc};
+use std::{fs::File, io::Write, str::FromStr, sync::Arc};
+use uuid::Uuid;
 
 mod song;
 mod upload;
@@ -80,21 +82,12 @@ async fn main() -> anyhow::Result<()> {
 async fn show_player(
     State(_state): State<Arc<AppState>>,
     axum::extract::Path(song_id): axum::extract::Path<String>,
-) -> impl IntoResponse {
-    // Get presigned URL for the song
-    // let presigned_request = state
-    //     .s3_client
-    //     .get_object()
-    //     .bucket(&state.bucket_name)
-    //     .key(&song_id)
-    //     .presigned(
-    //         presigning::PresigningConfig::expires_in(std::time::Duration::from_secs(3600)).unwrap(),
-    //     )
-    //     .await
-    //     .unwrap();
-
-    let template = PlayerTemplate {
-        song_url: format!("http://cdn.hitrelease.nl/{song_id}.mp3"),
+) -> Result<PlayerTemplate, StatusCode> {
+    let Ok(song_uuid) = Uuid::from_str(&song_id) else {
+        return Err(StatusCode::BAD_REQUEST);
     };
-    Html(template.render().unwrap())
+
+    Ok(PlayerTemplate {
+        song_url: format!("http://cdn.hitrelease.nl/{song_uuid}.mp3"),
+    })
 }
