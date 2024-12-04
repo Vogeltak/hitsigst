@@ -40,7 +40,7 @@ fn main() -> anyhow::Result<()> {
 
     match &cli.command {
         Some(Commands::Prepare { from, output }) => prepare::start(from, output)?,
-        Some(Commands::Typst { from, output }) => todo!(),
+        Some(Commands::Typst { from: _, output: _ }) => todo!(),
         None => todo!(),
     };
 

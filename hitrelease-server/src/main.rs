@@ -1,5 +1,5 @@
 use axum::{extract::State, http::StatusCode, routing::get, Router};
-use hitrelease_util::Store;
+use hitrelease_util::{Songs, Store};
 use std::{str::FromStr, sync::Arc};
 use uuid::Uuid;
 
@@ -28,12 +28,15 @@ async fn main() -> anyhow::Result<()> {
     // Initialize tracing
     tracing_subscriber::fmt::init();
 
-    let endpoint_url = std::env::var("S3_ENDPOINT").expect("should set the endpoint URL");
+    let endpoint = std::env::var("S3_ENDPOINT").expect("should set the endpoint URL");
+
+    let songs: Songs = serde_json::from_str(std::fs::read_to_string("hitrelease.json")?.as_str())?;
+    let song_cache = Store::from(songs);
 
     // Create app state
     let state = Arc::new(AppState {
-        endpoint: endpoint_url,
-        song_cache: Store::default(),
+        endpoint,
+        song_cache,
     });
 
     // Build router
@@ -57,14 +60,18 @@ async fn show_about(State(_): State<Arc<AppState>>) -> AboutTemplate {
 
 // Handler for the player page
 async fn show_player(
-    State(_state): State<Arc<AppState>>,
+    State(state): State<Arc<AppState>>,
     axum::extract::Path(song_id): axum::extract::Path<String>,
 ) -> Result<PlayerTemplate, StatusCode> {
     let Ok(song_uuid) = Uuid::from_str(&song_id) else {
         return Err(StatusCode::BAD_REQUEST);
     };
 
+    if !state.song_cache.contains(&song_uuid) {
+        return Err(StatusCode::NOT_FOUND);
+    }
+
     Ok(PlayerTemplate {
-        song_url: format!("http://cdn.hitrelease.nl/{song_uuid}.mp3"),
+        song_url: format!("{}/{song_uuid}.mp3", state.endpoint),
     })
 }

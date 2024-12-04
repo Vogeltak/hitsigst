@@ -3,7 +3,7 @@ use std::sync::Arc;
 use dashmap::DashMap;
 use uuid::Uuid;
 
-use crate::Song;
+use crate::{Song, Songs};
 
 /// Data structure to store song info for concurrent access.
 ///
@@ -28,6 +28,10 @@ impl Store {
         self.inner.get(id).map(|s| s.clone())
     }
 
+    pub fn contains(&self, id: &Uuid) -> bool {
+        self.inner.contains_key(id)
+    }
+
     pub fn iter(&self) -> impl Iterator + use<'_> {
         self.inner.iter()
     }
@@ -36,5 +40,18 @@ impl Store {
 impl Default for Store {
     fn default() -> Self {
         Self::new()
+    }
+}
+
+impl From<Songs> for Store {
+    fn from(value: Songs) -> Self {
+        let map = DashMap::new();
+        for s in value.songs {
+            map.insert(s.id.clone(), s);
+        }
+
+        Self {
+            inner: Arc::new(map),
+        }
     }
 }

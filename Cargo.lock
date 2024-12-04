@@ -1390,6 +1390,7 @@ dependencies = [
  "hitrelease-util",
  "image",
  "qrcode",
+ "serde_json",
  "sqlx",
  "tokio",
  "tracing",
