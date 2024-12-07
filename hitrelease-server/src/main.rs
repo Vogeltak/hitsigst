@@ -1,7 +1,6 @@
 use axum::{extract::State, http::StatusCode, routing::get, Router};
 use hitrelease_util::{Songs, Store};
 use std::{str::FromStr, sync::Arc};
-use uuid::Uuid;
 
 mod song;
 
@@ -30,7 +29,7 @@ async fn main() -> anyhow::Result<()> {
 
     let endpoint = std::env::var("S3_ENDPOINT").expect("should set the endpoint URL");
 
-    let songs: Songs = serde_json::from_str(std::fs::read_to_string("hitrelease.json")?.as_str())?;
+    let songs: Songs = serde_json::from_str(include_str!("../../hitrelease.json"))?;
     let song_cache = Store::from(songs);
 
     // Create app state
@@ -63,15 +62,15 @@ async fn show_player(
     State(state): State<Arc<AppState>>,
     axum::extract::Path(song_id): axum::extract::Path<String>,
 ) -> Result<PlayerTemplate, StatusCode> {
-    let Ok(song_uuid) = Uuid::from_str(&song_id) else {
+    let Ok(song_id) = u32::from_str(&song_id) else {
         return Err(StatusCode::BAD_REQUEST);
     };
 
-    if !state.song_cache.contains(&song_uuid) {
+    if !state.song_cache.contains(song_id) {
         return Err(StatusCode::NOT_FOUND);
     }
 
     Ok(PlayerTemplate {
-        song_url: format!("{}/{song_uuid}.mp3", state.endpoint),
+        song_url: format!("{}/{song_id}.mp3", state.endpoint),
     })
 }

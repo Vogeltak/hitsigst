@@ -2,7 +2,7 @@ use std::{fs::File, io::Write, path::PathBuf};
 
 use hitrelease_util::{Song, Songs};
 use serde::Deserialize;
-use uuid::Uuid;
+use twox_hash::XxHash32;
 
 #[derive(Debug, Deserialize)]
 struct SongRecord {
@@ -20,11 +20,12 @@ pub(crate) fn start(input: &PathBuf, output: &String) -> anyhow::Result<()> {
     }
 
     // TODO: download audio and upload to object storage
+    let seed = 17;
 
     let songs: Vec<_> = songs
         .into_iter()
         .map(|s| Song {
-            id: Uuid::new_v4(),
+            id: XxHash32::oneshot(seed, s.url.as_bytes()),
             title: s.title,
             artist: s.artist,
             year: s.year,
@@ -36,7 +37,7 @@ pub(crate) fn start(input: &PathBuf, output: &String) -> anyhow::Result<()> {
     let songs = Songs { songs };
 
     let mut file = File::create(output)?;
-    file.write_all(serde_json::to_string_pretty(&songs)?.as_bytes())?;
+    file.write_all(serde_json::to_string(&songs)?.as_bytes())?;
 
     println!("written song data for Hitrelease to {output}");
 

@@ -1,7 +1,6 @@
 use std::sync::Arc;
 
 use dashmap::DashMap;
-use uuid::Uuid;
 
 use crate::{Song, Songs};
 
@@ -10,7 +9,7 @@ use crate::{Song, Songs};
 /// Basically a thin wrapper around [`dashmap::DashMap`] with an opiniated
 /// and purpose-built API.
 pub struct Store {
-    inner: Arc<DashMap<Uuid, Song>>,
+    inner: Arc<DashMap<u32, Song>>,
 }
 
 impl Store {
@@ -24,12 +23,12 @@ impl Store {
         _ = self.inner.insert(s.id, s);
     }
 
-    pub fn get(&self, id: &Uuid) -> Option<Song> {
-        self.inner.get(id).map(|s| s.clone())
+    pub fn get(&self, id: u32) -> Option<Song> {
+        self.inner.get(&id).map(|s| s.clone())
     }
 
-    pub fn contains(&self, id: &Uuid) -> bool {
-        self.inner.contains_key(id)
+    pub fn contains(&self, id: u32) -> bool {
+        self.inner.contains_key(&id)
     }
 
     pub fn iter(&self) -> impl Iterator + use<'_> {
@@ -47,7 +46,7 @@ impl From<Songs> for Store {
     fn from(value: Songs) -> Self {
         let map = DashMap::new();
         for s in value.songs {
-            map.insert(s.id.clone(), s);
+            map.insert(s.id, s);
         }
 
         Self {
