@@ -1,7 +1,13 @@
-use std::{fs::File, io::Write, path::PathBuf, process::Command};
+use std::{
+    fs::File,
+    io::Write,
+    path::PathBuf,
+    process::{Command, Output},
+};
 
+use futures::stream::{self, StreamExt};
 use hitrelease_util::{Song, Songs};
-use indicatif::ParallelProgressIterator;
+use indicatif::{ParallelProgressIterator, ProgressBar};
 use rayon::prelude::*;
 use serde::Deserialize;
 use twox_hash::XxHash32;
@@ -52,13 +58,92 @@ pub(crate) fn start(input: &PathBuf, output: &String, download_dir: &String) -> 
     Ok(())
 }
 
+#[expect(dead_code)]
+fn download_songs_async(songs: &[(Song, String)], output_dir: &String) -> anyhow::Result<()> {
+    println!("downloading songs...");
+
+    let rt = tokio::runtime::Runtime::new()?;
+    rt.block_on(async {
+        let pb = ProgressBar::new(songs.len() as u64);
+
+        let download_tasks = songs.iter().map(|(song, url)| {
+            let pb = pb.clone();
+            let output_dir = output_dir.clone();
+            let song_id = song.id;
+            let url = url.clone();
+
+            tokio::spawn(async move {
+                pb.inc(1);
+                tokio::process::Command::new("yt-dlp")
+                    .arg("--no-playlist")
+                    .arg("--extract-audio")
+                    .arg("--audio-format")
+                    .arg("mp3")
+                    .arg("--output")
+                    .arg(format!("{output_dir}/{}.%(ext)s", song_id))
+                    .arg(url)
+                    .output()
+                    .await
+            })
+        });
+
+        let results: Vec<_> = stream::iter(download_tasks)
+            .buffer_unordered(16)
+            .collect()
+            .await;
+        let outputs = results
+            .into_iter()
+            .filter_map(|res| res.ok())
+            .collect::<Result<Vec<_>, _>>();
+        let Ok(outputs) = outputs else {
+            println!("failed while invoking yt-dlp: {}", outputs.err().unwrap());
+            return;
+        };
+
+        // Count yt-dlp errors
+        let ytdlp_errors: Vec<&Output> =
+            outputs.iter().filter(|out| !out.status.success()).collect();
+
+        // Count those that were already downloaded and didn't fail validation
+        let skipped = outputs
+            .iter()
+            .filter(|out| {
+                String::from_utf8_lossy(&out.stdout).contains("has already been downloaded")
+            })
+            .filter(|out| out.status.success())
+            .count();
+
+        let downloaded = songs.len() - ytdlp_errors.len() - skipped;
+
+        if downloaded > 0 {
+            println!("downloaded {downloaded} songs to {output_dir}/");
+        }
+        if skipped > 0 {
+            println!("skipped {skipped} songs because they were already downloaded");
+        }
+        if !ytdlp_errors.is_empty() {
+            println!(
+                "failed to download {} songs: {:#?}",
+                ytdlp_errors.len(),
+                ytdlp_errors
+                    .iter()
+                    .map(|e| String::from_utf8_lossy(&e.stderr))
+                    .collect::<Vec<_>>()
+            );
+        }
+    });
+
+    Ok(())
+}
+
 fn download_songs(songs: &[(Song, String)], output_dir: &String) -> anyhow::Result<()> {
     println!("downloading songs...");
-    let output = songs
+    let outputs = songs
         .par_iter()
         .progress_count(songs.len() as u64)
         .map(|(song, url)| {
             Command::new("yt-dlp")
+                .arg("--no-playlist")
                 .arg("--extract-audio")
                 .arg("--audio-format")
                 .arg("mp3")
@@ -70,28 +155,32 @@ fn download_songs(songs: &[(Song, String)], output_dir: &String) -> anyhow::Resu
         .collect::<Result<Vec<_>, _>>()?;
 
     // Count yt-dlp errors
-    let ytdlp_errors = output.iter().filter(|out| !out.status.success()).count();
+    let ytdlp_errors: Vec<&Output> = outputs.iter().filter(|out| !out.status.success()).collect();
 
     // Count those that were already downloaded and didn't fail validation
-    let skipped = output
+    let skipped = outputs
         .iter()
         .filter(|out| String::from_utf8_lossy(&out.stdout).contains("has already been downloaded"))
         .filter(|out| out.status.success())
         .count();
 
-    let downloaded = songs.len() - ytdlp_errors - skipped;
+    let downloaded = songs.len() - ytdlp_errors.len() - skipped;
 
     if downloaded > 0 {
-        println!(
-            "downloaded {} songs to {output_dir}/",
-            songs.len() - ytdlp_errors - skipped
-        );
+        println!("downloaded {downloaded} songs to {output_dir}/");
     }
     if skipped > 0 {
         println!("skipped {skipped} songs because they were already downloaded");
     }
-    if ytdlp_errors > 0 {
-        println!("failed to download {ytdlp_errors} songs")
+    if !ytdlp_errors.is_empty() {
+        println!(
+            "failed to download {} songs: {:#?}",
+            ytdlp_errors.len(),
+            ytdlp_errors
+                .iter()
+                .map(|e| String::from_utf8_lossy(&e.stderr))
+                .collect::<Vec<_>>()
+        );
     }
 
     Ok(())
