@@ -2,8 +2,6 @@ use axum::{extract::State, http::StatusCode, routing::get, Router};
 use hitrelease_util::{Songs, Store};
 use std::{str::FromStr, sync::Arc};
 
-mod song;
-
 // Template for the home/about page
 #[derive(askama::Template)]
 #[template(path = "index.html")]
