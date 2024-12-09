@@ -3,6 +3,7 @@ use std::{
     io::Write,
     path::PathBuf,
     process::{Command, Output},
+    time::Instant,
 };
 
 use futures::stream::{self, StreamExt};
@@ -53,7 +54,7 @@ pub(crate) fn start(input: &PathBuf, output: &String, download_dir: &String) -> 
     let mut file = File::create(output)?;
     file.write_all(serde_json::to_string(&songs)?.as_bytes())?;
 
-    println!("written song data for Hitrelease to {output}");
+    println!("wrote song data to {output}");
 
     Ok(())
 }
@@ -64,6 +65,7 @@ fn download_songs_async(songs: &[(Song, String)], output_dir: &String) -> anyhow
 
     let rt = tokio::runtime::Runtime::new()?;
     rt.block_on(async {
+        let start = Instant::now();
         let pb = ProgressBar::new(songs.len() as u64);
 
         let download_tasks = songs.iter().map(|(song, url)| {
@@ -91,10 +93,14 @@ fn download_songs_async(songs: &[(Song, String)], output_dir: &String) -> anyhow
             .buffer_unordered(16)
             .collect()
             .await;
+
+        println!("...finished after {} seconds", start.elapsed().as_secs());
+
         let outputs = results
             .into_iter()
             .filter_map(|res| res.ok())
             .collect::<Result<Vec<_>, _>>();
+
         let Ok(outputs) = outputs else {
             println!("failed while invoking yt-dlp: {}", outputs.err().unwrap());
             return;
@@ -137,6 +143,7 @@ fn download_songs_async(songs: &[(Song, String)], output_dir: &String) -> anyhow
 }
 
 fn download_songs(songs: &[(Song, String)], output_dir: &String) -> anyhow::Result<()> {
+    let start = Instant::now();
     println!("downloading songs...");
     let outputs = songs
         .par_iter()
@@ -153,6 +160,8 @@ fn download_songs(songs: &[(Song, String)], output_dir: &String) -> anyhow::Resu
                 .output()
         })
         .collect::<Result<Vec<_>, _>>()?;
+
+    println!("...finished after {} seconds", start.elapsed().as_secs());
 
     // Count yt-dlp errors
     let ytdlp_errors: Vec<&Output> = outputs.iter().filter(|out| !out.status.success()).collect();
