@@ -13,7 +13,7 @@
         Your browser does not support the audio element.
     </audio>
 </div>
-<p id="playerState">paused</p>
+<p id="playerState">Paused</p>
 <script>
     const visualizer = document.getElementById('visualizer');
     const audioPlayer = document.getElementById('song');
@@ -35,13 +35,13 @@
     // Update button text and class on play event
     audioPlayer.addEventListener('play', () => {
         visualizer.classList.add('playing');
-        playerState.style.display = 'none';
+        playerState.textContent = "Now playing...";
     });
 
     // Update button text and class on pause event
     audioPlayer.addEventListener('pause', () => {
         visualizer.classList.remove('playing');
-        playerState.style.display = 'block';
+        playerState.textContent = "Paused";
     });
 
     // Handle when audio ends
