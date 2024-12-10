@@ -6,6 +6,7 @@ pub struct Song {
     pub title: String,
     pub artist: String,
     pub year: i32,
+    pub deck: String,
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]

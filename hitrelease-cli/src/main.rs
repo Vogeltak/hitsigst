@@ -3,6 +3,7 @@ use std::path::PathBuf;
 use clap::{Parser, Subcommand};
 
 mod prepare;
+mod typst;
 
 #[derive(Parser)]
 #[command(version, about, long_about = None)]
@@ -26,6 +27,10 @@ enum Commands {
         /// Output directory for downloaded songs
         #[arg(short, long, value_name = "DIR", default_value_t = String::from("hitrelease-songs"))]
         download_dir: String,
+
+        /// Skip downloading songs
+        #[arg(short, long, default_value_t = false)]
+        no_download: bool,
     },
     /// Generate game cards using Typst
     Typst {
@@ -47,8 +52,9 @@ fn main() -> anyhow::Result<()> {
             from,
             output,
             download_dir,
-        }) => prepare::start(from, output, download_dir)?,
-        Some(Commands::Typst { from: _, output: _ }) => todo!(),
+            no_download,
+        }) => prepare::start(from, output, download_dir, *no_download)?,
+        Some(Commands::Typst { from, output }) => typst::build(from, output)?,
         None => todo!(),
     };
 

@@ -19,9 +19,15 @@ struct SongRecord {
     artist: String,
     year: i32,
     url: String,
+    deck: String,
 }
 
-pub(crate) fn start(input: &PathBuf, output: &String, download_dir: &String) -> anyhow::Result<()> {
+pub(crate) fn start(
+    input: &PathBuf,
+    output: &String,
+    download_dir: &String,
+    no_download: bool,
+) -> anyhow::Result<()> {
     let mut reader = csv::Reader::from_path(input)?;
     let mut songs: Vec<SongRecord> = vec![];
     for song in reader.deserialize() {
@@ -39,13 +45,14 @@ pub(crate) fn start(input: &PathBuf, output: &String, download_dir: &String) -> 
                     title: s.title.clone(),
                     artist: s.artist.clone(),
                     year: s.year,
+                    deck: s.deck.clone(),
                 },
                 s.url.clone(),
             )
         })
         .collect();
 
-    download_songs(&songs, download_dir)?;
+    download_songs(&songs, download_dir, no_download)?;
 
     let songs = Songs {
         songs: songs.into_iter().map(|(s, _)| s).collect(),
@@ -142,15 +149,24 @@ fn download_songs_async(songs: &[(Song, String)], output_dir: &String) -> anyhow
     Ok(())
 }
 
-fn download_songs(songs: &[(Song, String)], output_dir: &String) -> anyhow::Result<()> {
+fn download_songs(
+    songs: &[(Song, String)],
+    output_dir: &String,
+    no_download: bool,
+) -> anyhow::Result<()> {
     let start = Instant::now();
     println!("downloading songs...");
     let outputs = songs
         .par_iter()
         .progress_count(songs.len() as u64)
         .map(|(song, url)| {
-            Command::new("yt-dlp")
-                .arg("--no-playlist")
+            let mut cmd = Command::new("yt-dlp");
+
+            if no_download {
+                cmd.arg("--skip-download");
+            }
+
+            cmd.arg("--no-playlist")
                 .arg("--extract-audio")
                 .arg("--audio-format")
                 .arg("mp3")
