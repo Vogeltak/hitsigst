@@ -52,10 +52,13 @@ pub(crate) fn build(input: &PathBuf, output: &str) -> anyhow::Result<()> {
     // customized by calling `.with_file_name()` on `qr_dir`.
     qr_dir.push("qr.svg");
 
+    // Get the base of the URL we're encoding in the QR code
+    let base_url = std::env::var("QR_URL").expect("should set QR_URL");
+
     // Generate QR codes and write them to /tmp
     let data_for_typst = songs.songs.into_iter().enumerate().map(|(i, s)| {
         // SAFETY: URLSs should remain within length, since id is always 32 bits
-        let code = QrCode::new(format!("https://hitrelease.nl/song/{}", s.id)).unwrap();
+        let code = QrCode::new(format!("{}/song/{}", base_url, s.id)).unwrap();
         let image = code.render::<svg::Color>().build();
         let qr_path = qr_dir.with_file_name(format!("{}.svg", s.id));
         std::fs::write(&qr_path, image).unwrap();
