@@ -11,7 +11,9 @@
   scope: "parent",
   clearance: 0em,
 )[
-  #text(size: 8pt, "{card_deck}")
+  #text(size: 8pt)[
+    #highlight(fill: rgb("#00000020"), extent: 6pt, radius: 8pt)[{card_deck}]
+  ]
 ]
 #place(
   bottom + right,
