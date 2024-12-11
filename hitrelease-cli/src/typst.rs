@@ -66,7 +66,7 @@ pub(crate) fn build(input: &PathBuf, output: &str) -> anyhow::Result<()> {
             title: s.title,
             color_degree: (i * 2) % 360,
             card_deck: s.deck,
-            card_nr: i,
+            card_nr: i + 1,
             qr_path: qr_path.display().to_string(),
         }
     });

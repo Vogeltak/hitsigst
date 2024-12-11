@@ -27,4 +27,4 @@
 #pagebreak()
 #set page(fill: none)
 
-#align(center + horizon, image("{qr_path}", width: 80%))
+#align(center + horizon, box(stroke: 5pt + gradient.linear(..color.map.rainbow), radius: 3.5cm, width: 7cm, height: 7cm, image("{qr_path}", width: 50%)))
