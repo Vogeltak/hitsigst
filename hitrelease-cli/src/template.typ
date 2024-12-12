@@ -1,4 +1,9 @@
 #set page(width: 10cm, height: 10cm)
+#set text(font: (
+  "Noto Sans",
+  "Helvetica",
+  "Arial",
+))
 #set page(fill: gradient.linear(color.oklch(90%, 0.3, {color_degree}deg, 100%), color.oklch(90%, 0.3, {color_degree_2}deg, 100%), angle: 45deg))
 
 #align(center + horizon, text(size: 16pt, "{artist}"))
