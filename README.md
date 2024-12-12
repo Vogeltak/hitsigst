@@ -22,10 +22,10 @@ The first one to have a timeline of 10 cards wins!
 
 There are 4 main steps for setting up Hitsigst.
 
-1. Prepare a CSV with your music and run it through `hitrelease-cli prepare` See [`prepare.rs`](hitsigst-cli/src/prepare.rs).
+1. Prepare a CSV with your music and run it through `hitsigst-cli prepare` See [`prepare.rs`](hitsigst-cli/src/prepare.rs).
 2. Upload music to S3-compatible object storage using `upload_to_r2.sh`.
-3. Generate your deck of cards with `hitrelease-cli typst` (and probably have them printed as well).
-4. Host `hitrelease-server` as a personal service.
+3. Generate your deck of cards with `hitsigst-cli typst` (and probably have them printed as well).
+4. Host `hitsigst-server` as a personal service.
 
 CLI reference for `prepare` and `typst` is shown below.
 
