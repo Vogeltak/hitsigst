@@ -27,6 +27,7 @@ impl From<SongDataTypst> for HashMap<&str, String> {
         map.insert("year", value.year.to_string());
         map.insert("title", value.title);
         map.insert("color_degree", value.color_degree.to_string());
+        map.insert("color_degree_2", (value.color_degree + 90).to_string());
         map.insert("card_deck", value.card_deck);
         map.insert("card_nr", value.card_nr.to_string());
         map.insert("qr_path", value.qr_path);

@@ -1,5 +1,5 @@
 #set page(width: 10cm, height: 10cm)
-#set page(fill: gradient.linear(color.hsl({color_degree}deg, 100%, 80%), color.hsl(-{color_degree}deg, 100%, 60%), angle: 45deg))
+#set page(fill: gradient.linear(color.oklch(90%, 0.3, {color_degree}deg, 100%), color.oklch(90%, 0.3, {color_degree_2}deg, 100%), angle: 45deg))
 
 #align(center + horizon, text(size: 16pt, "{artist}"))
 #align(center + horizon, text(size: 42pt, "{year}"))
