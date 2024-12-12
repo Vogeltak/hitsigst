@@ -555,14 +555,14 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "d231dfb89cfffdbc30e7fc41579ed6066ad03abda9e567ccafae602b97ec5024"
 
 [[package]]
-name = "hitrelease-cli"
+name = "hitsigst-cli"
 version = "0.1.0"
 dependencies = [
  "anyhow",
  "clap",
  "csv",
  "futures",
- "hitrelease-util",
+ "hitsigst-util",
  "indicatif",
  "new_string_template",
  "qrcode",
@@ -574,7 +574,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "hitrelease-server"
+name = "hitsigst-server"
 version = "0.1.0"
 dependencies = [
  "anyhow",
@@ -582,7 +582,7 @@ dependencies = [
  "askama_axum",
  "axum",
  "bytes",
- "hitrelease-util",
+ "hitsigst-util",
  "serde_json",
  "tokio",
  "tracing",
@@ -590,7 +590,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "hitrelease-util"
+name = "hitsigst-util"
 version = "0.1.0"
 dependencies = [
  "dashmap",

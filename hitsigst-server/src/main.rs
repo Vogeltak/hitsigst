@@ -1,5 +1,5 @@
 use axum::{extract::State, http::StatusCode, routing::get, Router};
-use hitrelease_util::{Songs, Store};
+use hitsigst_util::{Songs, Store};
 use std::{str::FromStr, sync::Arc};
 
 // Template for the home/about page
@@ -27,7 +27,7 @@ async fn main() -> anyhow::Result<()> {
 
     let endpoint = std::env::var("S3_ENDPOINT").expect("should set the endpoint URL");
 
-    let songs: Songs = serde_json::from_str(include_str!("../../hitrelease.json"))?;
+    let songs: Songs = serde_json::from_str(include_str!("../../hitsigst.json"))?;
     let song_cache = Store::from(songs);
 
     // Create app state

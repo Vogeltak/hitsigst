@@ -3,7 +3,7 @@ use std::path::PathBuf;
 use std::process::Command;
 use std::str::FromStr;
 
-use hitrelease_util::Songs;
+use hitsigst_util::Songs;
 use new_string_template::template::Template;
 use qrcode::render::svg;
 use qrcode::QrCode;
@@ -44,7 +44,7 @@ pub(crate) fn build(input: &PathBuf, output: &str) -> anyhow::Result<()> {
     let templ = Template::new(CARD_TEMPLATE);
 
     // Ensure a directory for QR codes exists
-    let mut qr_dir = PathBuf::from_str("hitrelease-qr-codes")?;
+    let mut qr_dir = PathBuf::from_str("hitsigst-qr-codes")?;
     if !qr_dir.try_exists()? {
         std::fs::create_dir_all(&qr_dir)?;
     }
@@ -80,13 +80,13 @@ pub(crate) fn build(input: &PathBuf, output: &str) -> anyhow::Result<()> {
         .map(|data| templ.render(&data.into()).unwrap())
         .collect();
 
-    let hitrelease_typst = "hitrelease-cards.typ";
-    std::fs::write(hitrelease_typst, rendered)?;
+    let hitsigst_typst = "hitsigst-cards.typ";
+    std::fs::write(hitsigst_typst, rendered)?;
 
     // Execute Typst to compile into a PDF
     Command::new("typst")
         .arg("compile")
-        .arg(hitrelease_typst)
+        .arg(hitsigst_typst)
         .arg(output)
         .output()?;
 

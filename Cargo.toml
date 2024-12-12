@@ -3,7 +3,7 @@
 resolver = "2"
 
 members = [
-  "hitrelease-server",
-  "hitrelease-util",
-  "hitrelease-cli"
+  "hitsigst-server",
+  "hitsigst-util",
+  "hitsigst-cli"
 ]

@@ -7,7 +7,7 @@ use std::{
 };
 
 use futures::stream::{self, StreamExt};
-use hitrelease_util::{Song, Songs};
+use hitsigst_util::{Song, Songs};
 use indicatif::{ParallelProgressIterator, ProgressBar};
 use rayon::prelude::*;
 use serde::Deserialize;
